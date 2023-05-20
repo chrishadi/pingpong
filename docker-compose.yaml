@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  nomad:
+    image: multani/nomad:1.5.5
+    command: agent -dev
+    privileged: true
+    ports:
+    - 4646:4646
+    environment:
+      NOMAD_LOCAL_CONFIG: |
+        datacenter = "${DATACENTER:-dc1}"
+        region     = "${REGION:-global}"
+
+        data_dir = "/nomad/data/"
+
+        bind_addr = "0.0.0.0"
+        advertise {
+          http = "{{ GetPrivateIP }}:4646"
+          rpc  = "{{ GetPrivateIP }}:4647"
+          serf = "{{ GetPrivateIP }}:4648"
+        }
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /tmp:/tmp
+      - nomad-data:/nomad/data:rw
+
+  pong:
+    build: ./cmd/pong
+    depends_on:
+      - nomad
+    ports:
+      - 8080:80
+    environment:
+      - PONG_HOSTADDR=YOUR_IP_ADDR:8080
+      - PONG_PORT=80
+
+volumes:
+  nomad-data:
