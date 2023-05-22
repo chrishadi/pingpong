@@ -36,6 +36,8 @@ func (*pingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "text/plain")
 	w.Write([]byte("pong"))
+
+	log.Printf("Received ping from %s", r.RemoteAddr)
 }
 
 func main() {
